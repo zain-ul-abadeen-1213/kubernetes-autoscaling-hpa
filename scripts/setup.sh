@@ -36,6 +36,6 @@ kubectl -n zaintech rollout status deployment/zaintech-cpu --timeout=180s
 echo "== 5/5 Status =="
 kubectl -n zaintech get pods,svc,hpa
 echo
-echo "App: http://localhost:30081"
+echo "App in browser: kubectl -n zaintech port-forward svc/zaintech-cpu 30081:80  ->  http://localhost:30081"
 echo "Next: terminal 1 -> kubectl -n zaintech get hpa --watch"
 echo "      terminal 2 -> bash scripts/generate-load.sh"
