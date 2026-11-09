@@ -55,7 +55,13 @@ bash scripts/generate-load.sh
 Within a minute or two the TARGETS column climbs past 50%, replicas scale
 1 → 6, and after the load stops they scale back down to 1.
 
-App in the browser: http://localhost:30081
+App in the browser (kind only maps the ports declared at cluster creation,
+so use a port-forward):
+
+```bash
+kubectl -n zaintech port-forward svc/zaintech-cpu 30081:80
+# then open http://localhost:30081
+```
 
 Verify the moving parts:
 
@@ -72,6 +78,30 @@ scripts/      setup.sh · generate-load.sh
 verify.sh     component checks (metrics API, HPA target, app response)
 docs/         run screenshots
 ```
+
+## Verified run — 9 November 2026
+
+Run end to end on the local kind cluster `zaintech`:
+
+- metrics-server installed with the kind TLS patch — `kubectl top nodes` answers
+- The pre-existing `zaintech-web` HPA, stuck at `cpu: <unknown>/50%` for two
+  days, came alive and reported a real 1%
+- **Before load:** `zaintech-cpu` at **cpu 4%/50%**, **1 replica**
+
+  ![HPA before load](docs/01-hpa-before-load.png)
+- **Under load** (busybox pod generating requests against the service
+  ClusterIP): CPU climbed to **204%** and the HPA scaled the deployment
+  **1 → 4 replicas** on its own
+
+  ![HPA scaling up under load](docs/02-hpa-scale-up.png)
+- **verify.sh — Passed: 5, Failed: 0**
+
+  ![verify.sh all checks passed](docs/03-verify-pass.png)
+
+One lab note: pods in this cluster could not resolve service DNS names from
+the busybox image (`wget: bad address` for both the short name and the FQDN),
+so the load generator targets the service ClusterIP, which the script looks
+up through the Kubernetes API.
 
 ## About Cluster Autoscaler
 
