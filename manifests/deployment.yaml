@@ -1,0 +1,36 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: zaintech-cpu
+  namespace: zaintech
+  labels:
+    app: zaintech-cpu
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: zaintech-cpu
+  template:
+    metadata:
+      labels:
+        app: zaintech-cpu
+    spec:
+      containers:
+        - name: cpu-app
+          image: zaintech-cpu-app:v1
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 80
+          resources:
+            requests:
+              cpu: "200m"
+              memory: "128Mi"
+            limits:
+              cpu: "500m"
+              memory: "256Mi"
+          readinessProbe:
+            httpGet:
+              path: /
+              port: 80
+            initialDelaySeconds: 3
+            periodSeconds: 5
